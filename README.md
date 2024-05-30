@@ -1,6 +1,4 @@
-# Next.js Authentication API Project
-
-This project aims to create a secure authentication API using Next.js, JSON Web Tokens (JWT), bcrypt for hashing passwords, and mongoose for creating models to interact with a MongoDB database. With this API, you can implement user registration (signup) and login functionality with enhanced security features.
+# Hotel Booking Checkin Project
 
 ## Prerequisites
 
