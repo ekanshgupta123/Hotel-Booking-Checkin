@@ -12,7 +12,6 @@
     gap: 10px;
 }
 
-.destination-input,
 .date-input,
 .number-input,
 .child-age-input,
@@ -22,6 +21,7 @@
     margin: 5px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
+    width: 150%;
 }
 
 .children-inputs-container {
@@ -144,3 +144,73 @@
     background-color: #005bb5;
 }
 
+
+.suggestions-container {
+    position: relative;
+    width: 100%;
+}
+
+.search-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.destination-input {
+    width: 150%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.suggestions-container {
+    position: relative;
+    width: 100%;
+}
+
+.suggestions-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    position: absolute;
+    width: 100%;
+    background-color: white;
+    z-index: 1000;
+}
+
+.suggestions-list li {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+}
+
+.suggestions-list li:hover {
+    background-color: #f0f0f0;
+}
+
+.suggestion-icon {
+    margin-right: 10px;
+    font-size: 1.2em; /* Adjust size as needed */
+}
+
+.suggestion-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.suggestion-name {
+    font-weight: bold;
+}
+
+.suggestion-details {
+    color: grey;
+    font-size: 0.9em;
+    margin-left: 5px; /* Add some space between name and country code */
+}

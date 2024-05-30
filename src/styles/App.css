@@ -40,74 +40,78 @@
   
   .search-form {
     display: flex;
-    flex-wrap: wrap; /* Ensure inputs wrap on smaller screens */
-    gap: 10px;
+    flex-direction: column;
+    gap: 20px; /* Increased gap for better spacing */
     background-color: #fff;
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
-  }
-  
-  .form-row {
+    width: 100%;
+    max-width: 800px; /* Set a max-width to control form width */
+    margin: 0 auto; /* Center the form */
+}
+
+.form-row {
     display: flex;
     width: 100%;
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
-  }
-  
-  .destination-input {
-    flex-grow: 1; /* Allows input to grow and fill available space */
+}
+
+.destination-input {
+    flex-grow: 3; /* Allows input to grow and fill available space */
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-  }
-  
-  .date-input,
-  .number-input {
+}
+
+.date-input,
+.number-input {
+    flex-grow: 1; /* Allows inputs to grow and take up available space */
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    /* Setting specific widths may not be necessary if using flexbox,
-       but can be set for finer control */
-  }
-  
-  .children-inputs-container {
+}
+
+.children-inputs-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-  }
-  
-  
-  .child-age-input,
-  .child-count-input {
+}
+
+.child-age-input,
+.child-count-input {
     flex: 1; /* Allow inputs to grow and take up available space */
-  }
-  
-  
-  .add-child-button {
+}
+
+.add-child-button {
     align-self: flex-start; /* Align button to the start of the flex container */
     margin-top: 10px; /* Additional space above the button if needed */
     /* Rest of your button styling */
-  }
-  
-  .children-input-group {
+}
+
+.children-input-group {
     display: flex;
     gap: 10px;
     align-items: center;
     margin-bottom: 10px; /* Space between each child input group */
-  }
-  
-  /* You may also want to adjust the responsive behavior */
-  @media (max-width: 768px) {
-    .children-input-group {
-      flex-direction: column;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
     }
-  
+
+    .destination-input,
+    .date-input,
+    .number-input,
+    .search-button,
     .add-child-button {
-      align-self: stretch; /* Button stretches to fill container width */
+        width: 100%; /* Full width on smaller screens */
     }
-  }
+}
   
   .search-button,
   .add-child-button {

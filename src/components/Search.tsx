@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import '../styles/App.css';
-import { useRouter } from "next/router";
+import { format } from 'date-fns';
+import axios from 'axios';
 
 const Search = () => {
     const [searchParams, setSearchParams] = useState({
@@ -8,33 +10,14 @@ const Search = () => {
         checkInDate: '',
         checkOutDate: '',
         adults: 1,
-        children: [{ age: '', count: 1 }],
+        children: [{ age: ''}],
         rooms: 1
     });
+    const [suggestions, setSuggestions] = useState<any[]>([]); 
+    const [regionId, setRegionId] = useState(null);
     const router = useRouter();
 
-    const dummyHotelProperties = [
-        {
-            id : 1,
-            title: 'Hotel Sunshine',
-            price: '$100 per night',
-            image: 'https://via.placeholder.com/150'
-        },
-        {
-            id : 2,
-            title: 'Grand Palace Hotel',
-            price: '$150 per night',
-            image: 'https://via.placeholder.com/150'
-        },
-        {
-            id : 3,
-            title: 'Oceanview Resort',
-            price: '$200 per night',
-            image: 'https://via.placeholder.com/150'
-        }
-    ];
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
         const { name, value } = e.target;
         setSearchParams(prevParams => ({
             ...prevParams,
@@ -42,23 +25,23 @@ const Search = () => {
         }));
     };
 
-    const handleChildChange = (index: number, field: string, value: any) => {
+    const handleChildChange = (index: number, value: string) => {
         const newChildren = searchParams.children.map((child, i) =>
-            i === index ? { ...child, [field]: value } : child
+            i === index ? { ...child, age: value } : child
         );
         setSearchParams(prevParams => ({
             ...prevParams,
             children: newChildren
         }));
     };
-
+    
     const addChild = () => {
         setSearchParams(prevParams => ({
             ...prevParams,
-            children: [...prevParams.children, { age: '', count: 1 }]
+            children: [...prevParams.children, { age: '' }]
         }));
     };
-
+    
     const deleteChild = (indexToDelete: number) => {
         setSearchParams(prevParams => ({
             ...prevParams,
@@ -66,13 +49,156 @@ const Search = () => {
         }));
     };
 
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+   const getRegionId = async (query: string) => {
+        const body = JSON.stringify({
+            query: query,
+            lang: "en"
+        });
+    
+        const requestOptions: RequestInit = {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: body
+        };
+    
+        try {
+            const response = await fetch("/api/search/proxy", requestOptions);
+            const result = await response.json();
+            console.log("Result:", result);
+    
+            if (result.data && result.data.regions) {
+                const cities = result.data.regions.filter((region: any) => region.type === 'City');
+                return cities;
+            } else {
+                console.log('No regions found');
+                return [];
+            }
+        } catch (error) {
+            console.log('Error:', error);
+            return [];
+        }
+    };
+
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (searchParams.destination.length > 2) {  // Fetch suggestions if input length is more than 2
+                const regions = await getRegionId(searchParams.destination);
+                setSuggestions(regions);
+            } else {
+                setSuggestions([]);
+            }
+        };
+
+        fetchSuggestions();
+    }, [searchParams.destination]);
+
+    const searchHotels = async (query: any) => {     
+        
+        const guests = [
+            {
+                adults: Number(searchParams.adults),
+                children: searchParams.children.map(child => {
+                    const age = parseInt(child.age, 10);
+                    return age;
+                })
+            }
+        ];
+
+        const checkin = format(new Date(searchParams.checkInDate), 'yyyy-MM-dd');
+        const checkout = format(new Date(searchParams.checkOutDate), 'yyyy-MM-dd');
+
+        console.log(checkin); 
+        console.log(checkout);
+
+        // const body = JSON.stringify({
+        //     "checkin": "2024-06-01",
+        //     "checkout": "2024-06-04",
+        //     "residency": "gb",
+        //     "language": "en",
+        //     "guests": [
+        //         {
+        //             "adults": 2,
+        //             "children": []
+        //         }
+        //     ],
+        //     "region_id": 536,
+        //     "currency": "EUR"
+        // });
+        const body = {
+            "checkin": "2024-06-01",
+            "checkout": "2024-06-04",
+            "residency": "gb",
+            "language": "en",
+            "guests": [
+                {
+                    "adults": 2,
+                    "children": []
+                }
+            ],
+            "region_id": 536,
+            "currency": "EUR"
+        };
+
+        // const requestOptions: RequestInit = {
+        //     method: 'POST',
+        //     headers: {
+        //         "Content-Type": "application/json"
+        //     },
+        //     body: body
+        // };
+
+        try {
+            const response = await axios.post("/api/hotels/proxy", body);
+            // const result = await response.json();
+            console.log("Result:", response);
+        } catch (error) {
+            console.log('Error:', error);
+        }
+    
+        //     if (result.data && result.data.hotels) {
+        //         const hotelIds = result.data.hotels.slice(0,5).map((hotel: { id: any; }) => hotel.id);
+        //         console.log('Hotel IDs:', hotelIds);
+        
+        //         // Display the hotel IDs
+        //         hotelIds.forEach((hotelId: any, index: number) => {
+        //             console.log(`Hotel ${index + 1}: ${hotelId}`);
+        //         });
+                
+        //         return hotelIds; // Return the hotel IDs if needed
+        //     } else {
+        //         console.log('No hotels found');
+        //         return [];
+        //     }
+        // } catch (error) {
+        //     console.log('Error:', error);
+        //     return [];
+        // }
+    };
+
+
+
+    const handleSuggestionClick = (region: { name: any; id: React.SetStateAction<null>; }) => {
+        setSearchParams(prevState => ({
+            ...prevState,
+            destination: region.name
+        }));
+        setRegionId(region.id);
+        console.log(region.id);
+        setSuggestions([]);  // Clear suggestions after selection
+    };
+
+
+    const onSubmit = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         console.log(searchParams);
-    }
-
-    const handleViewDetails = (id: number) => {
-        router.push(`/hotel/details/${id}`);
+        if (regionId) {
+            console.log(`Using already set Region ID: ${regionId}`);
+            // Fetch hotels based on region ID
+            await searchHotels(regionId);
+        }
     };
 
     return (
@@ -80,14 +206,29 @@ const Search = () => {
             <h1>Check-In Search</h1>
             <form className="search-form" onSubmit={onSubmit}>
                 <div className="form-row">
-                    <input
-                        className="destination-input"
-                        type="text"
-                        name="destination"
-                        value={searchParams.destination}
-                        onChange={handleInputChange}
-                        placeholder="Destination"
-                    />
+                <div className="suggestions-container">
+                        <input
+                            className="destination-input"
+                            type="text"
+                            name="destination"
+                            value={searchParams.destination}
+                            onChange={handleInputChange}
+                            placeholder="Destination"
+                        />
+                        {suggestions.length > 0 && (
+                            <div className="suggestions-list-wrapper">
+                                <ul className="suggestions-list">
+                                    {suggestions.map((region) => (
+                                        <li key={region.id} onClick={() => handleSuggestionClick(region)}>
+                                            <div className="suggestion-text">
+                                                <span className="suggestion-name">{region.name}, {region.country_code}</span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
                     <input
                         className="date-input"
                         type="date"
@@ -118,16 +259,8 @@ const Search = () => {
                                     type="number"
                                     name="childAge"
                                     value={child.age}
-                                    onChange={(e) => handleChildChange(index, 'age', e.target.value)}
+                                    onChange={(e) => handleChildChange(index, e.target.value)}
                                     placeholder="Child Age"
-                                />
-                                <input
-                                    className="number-input child-count-input"
-                                    type="number"
-                                    name="childCount"
-                                    value={child.count}
-                                    onChange={(e) => handleChildChange(index, 'count', e.target.value)}
-                                    placeholder="Number of Children"
                                 />
                                 {searchParams.children.length > 1 && (
                                     <button type="button" className="delete-child-button" onClick={() => deleteChild(index)}>
@@ -149,24 +282,9 @@ const Search = () => {
                     <button type="submit" className="search-button">Search</button>
                 </div>
             </form>
-            <div className="properties-list">
-                <h1>Available Hotels</h1>
-                <ul>
-                    {dummyHotelProperties.map((property, index) => (
-                        <li key={index} className="property-item">
-                            <h2>{property.title}</h2>
-                            <p className="price">{property.price}</p>
-                            {property.image && (
-                                <img src={property.image} alt={property.title} className="property-image" />
-                            )}
-                            <br />
-                            <button type="button" onClick={() => handleViewDetails(property.id)}>View Details</button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
         </div>
     );
+    
 }
 
 export default Search;
